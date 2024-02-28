@@ -174,9 +174,15 @@ voice_assistant:
   on_stt_vad_end:
     - lambda: id(voice_assistant_phase) = ${voice_assist_thinking_phase_id};
     - script.execute: draw_display
+    - text_sensor.template.publish:
+        id: textrequest
+        state: !lambda return x;
   on_tts_stream_start:
     - lambda: id(voice_assistant_phase) = ${voice_assist_replying_phase_id};
     - script.execute: draw_display
+    - text_sensor.template.publish:
+        id: textresponse
+        state: !lambda return x;
   on_tts_stream_end:
     - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
     - script.execute: draw_display
@@ -428,6 +434,24 @@ image:
     type: RGB24
     use_transparency: true
 
+font:
+  - file: "gfonts://Roboto Condensed"
+    glyphs: "!%()+,-/_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZŽŠČŘĎŤŇĚÁÍÉÓÚŮÝ abcdefghijklmnopqrstuvwxyzμžščřďťňáěíóúůý₂³"
+    id: font1
+    size: 20
+
+text_sensor:
+  - id: textrequest
+    platform: template
+#    on_value:
+#      then:
+#        - component.update: s3_box_lcd
+  - id: textresponse
+    platform: template
+#    on_value:
+#      then:
+#        - component.update: s3_box_lcd
+
 color:
   - id: idle_color
     hex: ${idle_illustration_background_color}
@@ -462,18 +486,26 @@ display:
         lambda: |-
           it.fill(id(idle_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
+          it.printf(10, 200, id(font1), "%s", id(textrequest).state.c_str());
+          it.printf(10, 220, id(font1), "%s", id(textresponse).state.c_str());
       - id: listening_page
         lambda: |-
           it.fill(id(listening_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_listening), ImageAlign::CENTER);
+          it.printf(10, 200, id(font1), "%s", id(textrequest).state.c_str());
+          it.printf(10, 220, id(font1), "%s", id(textresponse).state.c_str());
       - id: thinking_page
         lambda: |-
           it.fill(id(thinking_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_thinking), ImageAlign::CENTER);
+          it.printf(10, 200, id(font1), "%s", id(textrequest).state.c_str());
+          it.printf(10, 220, id(font1), "%s", id(textresponse).state.c_str());
       - id: replying_page
         lambda: |-
           it.fill(id(replying_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_replying), ImageAlign::CENTER);
+          it.printf(10, 200, id(font1), "%s", id(textrequest).state.c_str());
+          it.printf(10, 220, id(font1), "%s", id(textresponse).state.c_str());
       - id: error_page
         lambda: |-
           it.fill(id(error_color));
