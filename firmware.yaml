@@ -455,9 +455,9 @@ text_sensor:
     platform: template
     on_value:
       lambda: |-
-        if(id(textrequest).state.length()>28) {
+        if(id(textrequest).state.length()>32) {
           std::string name = id(textrequest).state.c_str();
-          std::string truncated = esphome::str_truncate(name.c_str(),28);
+          std::string truncated = esphome::str_truncate(name.c_str(),31);
           id(textrequest).state = (truncated+"...").c_str();
         }
 
@@ -465,11 +465,12 @@ text_sensor:
     platform: template
     on_value:
       lambda: |-
-        if(id(textresponse).state.length()>28) {
+        if(id(textresponse).state.length()>32) {
           std::string name = id(textresponse).state.c_str();
-          std::string truncated = esphome::str_truncate(name.c_str(),28);
+          std::string truncated = esphome::str_truncate(name.c_str(),31);
           id(textresponse).state = (truncated+"...").c_str();
         }
+
 
 color:
   - id: idle_color
