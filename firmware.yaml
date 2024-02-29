@@ -1,13 +1,13 @@
 ---
 substitutions:
-  name: esp32-s3-box-3
-  friendly_name: ESP32 S3 Box 3
-  loading_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/loading_320_240.png
-  idle_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/idle_320_240.png
-  listening_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/listening_320_240.png
-  thinking_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/thinking_320_240.png
-  replying_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/replying_320_240.png
-  error_illustration_file: https://github.com/esphome/firmware/raw/main/voice-assistant/casita/error_320_240.png
+  name: esp32-s3-box-3-roboy
+  friendly_name: Roboy
+  loading_illustration_file: https://github.com/lajoshanko/Home-Assistant-Voice-Assistant-faces/blob/main/roboy/roboy_load_320_240.png?raw=true
+  idle_illustration_file: https://github.com/lajoshanko/Home-Assistant-Voice-Assistant-faces/blob/main/roboy/roboy_idle_320_240.png?raw=true
+  listening_illustration_file: https://github.com/lajoshanko/Home-Assistant-Voice-Assistant-faces/blob/main/roboy/roboy_listen_320_240.png?raw=true
+  thinking_illustration_file: https://github.com/lajoshanko/Home-Assistant-Voice-Assistant-faces/blob/main/roboy/roboy_think_320_240.png?raw=true
+  replying_illustration_file: https://github.com/lajoshanko/Home-Assistant-Voice-Assistant-faces/blob/main/roboy/roboy_reply_320_240.png?raw=true
+  error_illustration_file: https://github.com/lajoshanko/Home-Assistant-Voice-Assistant-faces/blob/main/roboy/roboy_error_320_240.png?raw=true
 
   loading_illustration_background_color: "000000"
   idle_illustration_background_color: "000000"
@@ -106,6 +106,7 @@ button:
     id: factory_reset_btn
     name: Factory reset
 
+
 binary_sensor:
   - platform: gpio
     pin:
@@ -171,20 +172,27 @@ voice_assistant:
   on_listening:
     - lambda: id(voice_assistant_phase) = ${voice_assist_listening_phase_id};
     - script.execute: draw_display
+    - text_sensor.template.publish:
+        id: textrequest
+        state: ""
   on_stt_vad_end:
     - lambda: id(voice_assistant_phase) = ${voice_assist_thinking_phase_id};
     - script.execute: draw_display
-    - text_sensor.template.publish:
-        id: textrequest
-        state: !lambda return x;
   on_tts_stream_start:
     - lambda: id(voice_assistant_phase) = ${voice_assist_replying_phase_id};
     - script.execute: draw_display
+  on_tts_stream_end:
+    - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
+    - script.execute: draw_display
+  on_stt_end:
+    - text_sensor.template.publish:
+        id: textrequest
+        state: !lambda return x;
+    - script.execute: draw_display
+  on_tts_start:
     - text_sensor.template.publish:
         id: textresponse
         state: !lambda return x;
-  on_tts_stream_end:
-    - lambda: id(voice_assistant_phase) = ${voice_assist_idle_phase_id};
     - script.execute: draw_display
   on_end:
     - if:
@@ -435,17 +443,20 @@ image:
     use_transparency: true
 
 font:
-  - file: "gfonts://Roboto Condensed"
-    glyphs: "!%()+,-/_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZŽŠČŘĎŤŇĚÁÍÉÓÚŮÝ abcdefghijklmnopqrstuvwxyzμžščřďťňáěíóúůý₂³"
+  - file:
+      type: gfonts
+      family: Pixelify Sans
+      weight: 500
+    glyphs: "?!%()+,-/_.:°0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZÖÜÓŐÚÉÁŰÍ abcdefghijklmnopqrstuvwxyzöüóőúéáűí"
     id: font1
-    size: 20
+    size: 15
 
 text_sensor:
   - id: textrequest
     platform: template
-#    on_value:
-#      then:
-#        - component.update: s3_box_lcd
+  #    on_value:
+  #      then:
+  #        - component.update: s3_box_lcd
   - id: textresponse
     platform: template
 #    on_value:
@@ -486,26 +497,21 @@ display:
         lambda: |-
           it.fill(id(idle_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_idle), ImageAlign::CENTER);
-          it.printf(10, 200, id(font1), "%s", id(textrequest).state.c_str());
-          it.printf(10, 220, id(font1), "%s", id(textresponse).state.c_str());
       - id: listening_page
         lambda: |-
           it.fill(id(listening_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_listening), ImageAlign::CENTER);
-          it.printf(10, 200, id(font1), "%s", id(textrequest).state.c_str());
-          it.printf(10, 220, id(font1), "%s", id(textresponse).state.c_str());
       - id: thinking_page
         lambda: |-
           it.fill(id(thinking_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_thinking), ImageAlign::CENTER);
-          it.printf(10, 200, id(font1), "%s", id(textrequest).state.c_str());
-          it.printf(10, 220, id(font1), "%s", id(textresponse).state.c_str());
+          it.printf(40, 205, id(font1), Color::BLACK, "%s", id(textrequest).state.c_str());
       - id: replying_page
         lambda: |-
           it.fill(id(replying_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_replying), ImageAlign::CENTER);
-          it.printf(10, 200, id(font1), "%s", id(textrequest).state.c_str());
-          it.printf(10, 220, id(font1), "%s", id(textresponse).state.c_str());
+          it.printf(40, 180, id(font1), Color::BLACK, "%s", id(textrequest).state.c_str());
+          it.printf(40, 205, id(font1), Color::BLACK, "%s", id(textresponse).state.c_str());
       - id: error_page
         lambda: |-
           it.fill(id(error_color));
