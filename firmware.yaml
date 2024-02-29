@@ -106,7 +106,6 @@ button:
     id: factory_reset_btn
     name: Factory reset
 
-
 binary_sensor:
   - platform: gpio
     pin:
@@ -454,14 +453,23 @@ font:
 text_sensor:
   - id: textrequest
     platform: template
-  #    on_value:
-  #      then:
-  #        - component.update: s3_box_lcd
+    on_value:
+      lambda: |-
+        if(id(textrequest).state.length()>28) {
+          std::string name = id(textrequest).state.c_str();
+          std::string truncated = esphome::str_truncate(name.c_str(),28);
+          id(textrequest).state = (truncated+"...").c_str();
+        }
+
   - id: textresponse
     platform: template
-#    on_value:
-#      then:
-#        - component.update: s3_box_lcd
+    on_value:
+      lambda: |-
+        if(id(textresponse).state.length()>28) {
+          std::string name = id(textresponse).state.c_str();
+          std::string truncated = esphome::str_truncate(name.c_str(),28);
+          id(textresponse).state = (truncated+"...").c_str();
+        }
 
 color:
   - id: idle_color
@@ -505,7 +513,7 @@ display:
         lambda: |-
           it.fill(id(thinking_color));
           it.image((it.get_width() / 2), (it.get_height() / 2), id(casita_thinking), ImageAlign::CENTER);
-          it.printf(40, 205, id(font1), Color::BLACK, "%s", id(textrequest).state.c_str());
+           it.printf(40, 205, id(font1), Color::BLACK, "%s", id(textrequest).state.c_str());
       - id: replying_page
         lambda: |-
           it.fill(id(replying_color));
